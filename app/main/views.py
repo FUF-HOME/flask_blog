@@ -34,7 +34,7 @@ def index():
                                                                 per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
                                                                 error_out=False)
     posts = pagination.items
-    return render_template('index.html', form=form, posts=posts)
+    return render_template('index.html', form=form, posts=posts,user=current_user)
 
 
 @main.route("/user/<username>", methods=["GET", "POST"])

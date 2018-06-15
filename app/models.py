@@ -6,6 +6,8 @@ from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db, login_manager
+from hashlib import md5
+
 
 
 class User(db.Model, UserMixin):
@@ -54,7 +56,8 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return "<Model User `{}`>".format(self.username)
 
-
+    def avatar(self,size):
+        return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() +'?d=mm&s=' + str(size)
 class Comment(db.Model):
     """Represents Proected comments."""
 

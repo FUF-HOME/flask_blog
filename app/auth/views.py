@@ -46,4 +46,4 @@ def register():
 def logout():
     logout_user()
     flash("You has been logged out.")
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("main.index"))

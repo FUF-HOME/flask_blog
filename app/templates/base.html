@@ -61,7 +61,7 @@
                 {% if current_user.is_authenticated %}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <img src="{{current_user.image_url }}"
+                        <img src="{{current_user.avatar(128) }}"
                              style="float: left;height: 35px;width: 35px;border-radius:50%;margin-right: 10px;margin-top: -6px;">
 
                         <span>{{current_user.username}}</span>
@@ -72,7 +72,7 @@
 
                         <li><a href=#>Moderate Comments</a></li>
 
-                        <li><a href="#"><span class="glyphicon glyphicon-log-out"></span> Sign Out</a></li>
+                        <li><a href="{{url_for('auth.logout',username=current_username)}}"><span class="glyphicon glyphicon-log-out"></span> Sign Out</a></li>
 
                     </ul>
                 </li>
