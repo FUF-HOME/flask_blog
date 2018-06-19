@@ -11,7 +11,7 @@ from .form import CKTextAreaField
 
 class MyModelView(ModelView):
     form_overrides = dict(text=CKTextAreaField)
-    column_searchable_list = ('text', 'title')
+    column_searchable_list = ('body', 'title')
 
     # Using Add Filter box
 

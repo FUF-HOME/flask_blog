@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
+from datetime import datetime
+
 from flask import render_template
-from flask import request, current_app, redirect, g, abort, flash
-from flask_login import current_user
+from flask import request, current_app, redirect, g, abort, flash, url_for
+from flask_login import current_user, login_required
 
 from app.models import db, User, Post
 from . import main
@@ -43,7 +45,7 @@ def user(username):
     if user is None:
         abort(404)
     page = request.args.get("page", 1, type=int)
-    pagination = user.posts.order_by(Post.publish_date.desc()).paginate(page, per_page=current_app.config[
+    pagination = user.posts.order_by(Post.timestamp.desc()).paginate(page, per_page=current_app.config[
         'FLASKY_POSTS_PER_PAGE'], error_out=False)
     posts = pagination.items
     return render_template("user.html", user=user, posts=posts, pagination=pagination)
@@ -65,3 +67,53 @@ def edit_profile(username):
             db.session.commit()
             redirect('main.index')
     return render_template('editProfile.html', form=form)
+
+
+# @main.route('/edit/<int:id>', methods=['GET', 'POST'])
+# @login_required
+# def edit(id):
+#     post = Post.query.get_or_404(id)
+#     if current_user != post.author and \
+#             not current_user.can(Permission.ADMINISTER):       # 当前作者不是发表博客的人且不是管理员
+#         abort(403)
+#
+#
+#     form =ArticleForm()
+#     if current_user.can(Permission.WRITE_ARTICLES) and \
+#             form.validate_on_submit():
+#         post = Post(title=form.title.data, body=form.body.data,
+#                     author=current_user._get_current_object())
+#         db.session.add(post)
+#         db.session.commit()
+#         return redirect(url_for('main.index'))
+#     if form.validate_on_submit():
+#         if not current_user.can(Permission.WRITE_ARTICLES):
+#             flash("没有写博客的权限，请联系管理员")
+#
+#     return render_template('md_edit.html',form=form)
+
+@main.route('/display/<int:id>', methods=['GET'])
+def display(id):
+    post = Post.query.get_or_404(id)
+    return render_template('display.html', posts=post)
+
+
+@main.route('/post/<int:id>', methods=['GET'])
+def post(id):
+    post = Post.query.get_or_404(id)
+
+    return render_template('post.html', posts=[post], avatars=User.avatar('128'))
+
+
+@main.route('/add_article', methods=['POST', 'GET'])
+@login_required
+def add_article():
+    form = PostForm()
+    if form.validate_on_submit():
+        posts = Post(title=form.title.data, body=form.body.data, author=current_user._get_current_object(),
+                     timestamp=datetime.utcnow())
+        db.session.add(posts)
+        db.session.commit()
+
+        return redirect(url_for('main.index'))
+    return render_template('md_edit.html', form=form)

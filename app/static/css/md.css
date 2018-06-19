@@ -1,0 +1,34 @@
+body {
+    margin: 0px;
+    boder: 0px;
+}
+
+.md-container {
+    width: 100%;
+    padding: 15px 20px;
+
+}
+
+.md-editor {
+    height: 550px;
+
+}
+
+.md-preview {
+    display: inline-block;
+    vertical-align: top;
+    box-sizing: border-box;
+    width: calc(50% - 20px);
+    height: 550px;
+}
+
+.flask-pagedown-input {
+    width: 100%;
+    height: 500px;
+}
+
+.md-button {
+    position: relative;
+    bottom: 50px;
+
+}

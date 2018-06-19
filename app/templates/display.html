@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% import "_macros.html" as macros %}
+
 
 {% block content %}
 {{ super() }}
 <div class="container">
     <div class="page-header ">
-        <h1>{{ posts[0].title }}</h1>
+        <h1>{{ posts.title }}</h1>
     </div>
 </div>
 <div class="container">
@@ -14,15 +14,16 @@
         <div class="col-md-12 well">
             {% set post_body = True %}
             <!--需要显示文章内容-->
-            {% include "_posts.html" %}
-
+            {{posts.body}}
             <nav class="text-center">
                 <div class="pagination">
-                    {{avatars}}
+
                 </div>
             </nav>
         </div>
     </div>
+    <div class="row">
 
+    </div>
 </div>
 {% endblock %}

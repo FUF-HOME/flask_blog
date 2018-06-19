@@ -2,6 +2,7 @@
 # -*-coding:utf-8-*-
 
 
+from flask_pagedown.fields import PageDownField
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Email, Length, Regexp, ValidationError
@@ -9,10 +10,19 @@ from wtforms.validators import DataRequired, Email, Length, Regexp, ValidationEr
 from ..models import Role, User
 
 
-class PostForm(FlaskForm):
-    title = StringField(validators=[DataRequired(), Length(1, 64)])
-    body = TextAreaField(validators=[DataRequired()], render_kw={"placeholder": "Loading..."})
+class ArticleForm(FlaskForm):
+    title = StringField(u"标题", validators=[DataRequired()])
+    pagedown = PageDownField('Enter your markdown')
+
+    content = PageDownField(u"正文", validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+
+class PostForm(FlaskForm):
+    title = StringField(label=u'博客标题', validators=[
+        DataRequired()], id='titlecode')
+    body = PageDownField(label=u'博客内容', validators=[DataRequired()])
+    submit = SubmitField(label=u'提交')
 
 
 class NameForm(FlaskForm):

@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 from datetime import datetime
+from hashlib import md5
 
+import bleach
 from flask_login import UserMixin, AnonymousUserMixin
+from markdown import markdown
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db, login_manager
-from hashlib import md5
-
 
 
 class User(db.Model, UserMixin):
@@ -17,10 +18,8 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(255), unique=True, index=True)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     hash_password = db.Column(db.String(255))
-    posts = db.relationship(
-        'Post',
-        backref='users',
-        lazy='dynamic')
+    posts = db.relationship('Post', backref='author', lazy='dynamic',
+                            cascade='all, delete-orphan')
 
     @property
     def password(self):
@@ -34,7 +33,7 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.hash_password, password)
 
     def can(self, permission):
-        return self.role is not None and (self.role.permission & permission) == permission
+        return self.role is not None and permission == permission
 
     def is_admin(self):
         return self.can(Permission.ADMIN)
@@ -52,9 +51,6 @@ class User(db.Model, UserMixin):
                 self.role = Role.query.filter_by(permissions=0xff).first()
             if self.role is None:
                 self.role = Role.query.filter_by(permissions=0x07).first()
-
-    def __repr__(self):
-        return "<Model User `{}`>".format(self.username)
 
     def avatar(self,size):
         return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() +'?d=mm&s=' + str(size)
@@ -86,12 +82,23 @@ class Post(db.Model, UserMixin):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
-    text = db.Column(db.Text())
+    body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow())
-    author = db.Column(db.String(45))
-    # Set the foreign key for Post
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    html_body = db.Column(db.Text)
+
     # Establish contact with Comment's ForeignKey: post_id
+    @staticmethod
+    def on_body_changed(target, value, oldvalue, initiator):
+        allow_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                      'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                      'h1', 'h2', 'h3', 'p', 'span', 'code', 'pre',
+                      'img', 'hr', 'div']
+        allow_attributes = ['src', 'alt', 'href', 'class']
+        target.html_body = bleach.linkify(bleach.clean(markdown(value, output_format='html',
+                                                                extensions=['markdown.extensions.extra',
+                                                                            'markdown.extensions.codehilite']),
+                                                       tags=allow_tags, attributes=allow_attributes, strip=True))
     comments = db.relationship(
         'Comment',
         backref='posts',
@@ -180,3 +187,6 @@ login_manager.anonymous_user = AnonymousUser
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+db.event.listen(Post.body, 'set', Post.on_body_changed)

@@ -4,12 +4,14 @@ from flask_babelex import Babel
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_moment import Moment
+from flask_pagedown import PageDown
 from flask_sqlalchemy import SQLAlchemy
 
 from  Config import config
 
 db = SQLAlchemy()
 admin = Admin()
+pagedown = PageDown()
 bootstrap = Bootstrap()
 moment = Moment()
 babel = Babel()
@@ -25,7 +27,7 @@ def create_app(config_name):
     config[config_name].init_app(app)
     db.init_app(app)
     babel.init_app(app)
-
+    pagedown.init_app(app)
     moment.init_app(app)
     admin.init_app(app)
 
